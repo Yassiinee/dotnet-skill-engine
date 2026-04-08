@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>SkillEngine.Tools</RootNamespace>
+    <AssemblyName>SkillEngine.Tools</AssemblyName>
+    <Description>Built-in code intelligence skills: scaffolding, review, diagnostics, architecture advisory.</Description>
+    <Authors>Yassine Zakhama</Authors>
+    <Version>1.0.0</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SkillEngine.Core\SkillEngine.Core.csproj" />
+  </ItemGroup>
+
+</Project>
