@@ -135,5 +135,5 @@ This project is inspired by the growing ecosystem of:
 
 If you found this interesting or want to collaborate, feel free to reach out:
 
-- 💼 LinkedIn: [https://www.linkedin.com/in/YOUR-USERNAME](https://www.linkedin.com/in/yassine-zakhama)  
+- 💼 LinkedIn: [https://www.linkedin.com/in/yassine-zakhama](https://www.linkedin.com/in/yassine-zakhama)  
 - 📧 Email: zakhamayassine@gmail.com
