@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging.Abstractions;
-using SkillEngine.Core;
+using SkillEngine.Core.Abstractions;
 using SkillEngine.Core.Engine;
+using SkillEngine.Core.Models;
 using Xunit;
 
 namespace SkillEngine.Core.Tests;
@@ -8,7 +9,9 @@ namespace SkillEngine.Core.Tests;
 public class IntentRouterTests
 {
     private static IntentRouter BuildRouter(params ISkill[] skills)
-        => new(skills, NullLogger<IntentRouter>.Instance);
+    {
+        return new(skills, NullLogger<IntentRouter>.Instance);
+    }
 
     [Fact]
     public void Route_ExactMatch_ReturnsCorrectSkill()
@@ -85,6 +88,8 @@ public class IntentRouterTests
         public string Description => $"Skill: {name}";
         public string InputSchema => "{}";
         public Task<SkillResult> ExecuteAsync(SkillRequest request, CancellationToken cancellationToken = default)
-            => Task.FromResult(SkillResult.Success("ok"));
+        {
+            return Task.FromResult(SkillResult.Success("ok"));
+        }
     }
 }

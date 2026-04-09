@@ -1,6 +1,5 @@
-using SkillEngine.Core;
-using SkillEngine.Core.Abstractions;
 using System.Text;
+using SkillEngine.Core.Models;
 
 namespace SkillEngine.Tools.Skills;
 
@@ -37,14 +36,14 @@ public sealed class CodeReviewSkill : ISkill
 
     public Task<SkillResult> ExecuteAsync(SkillRequest request, CancellationToken cancellationToken = default)
     {
-        var code = request.GetParameter<string>("code");
+        string? code = request.GetParameter<string>("code");
         if (string.IsNullOrWhiteSpace(code))
             return Task.FromResult(SkillResult.Failure("Parameter 'code' is required and cannot be empty.", "MISSING_PARAM"));
 
-        var focus = request.GetParameter<string>("focus") ?? "all";
-        var dotnetVersion = request.GetParameter<string>("dotnet_version") ?? "net8.0";
+        string focus = request.GetParameter<string>("focus") ?? "all";
+        string dotnetVersion = request.GetParameter<string>("dotnet_version") ?? "net8.0";
 
-        var findings = new List<ReviewFinding>();
+        List<ReviewFinding> findings = new();
 
         // ── Security Checks ───────────────────────────────────────────────────
         if (focus is "all" or "security")
@@ -96,7 +95,7 @@ public sealed class CodeReviewSkill : ISkill
         }
 
         // ── Build Report ──────────────────────────────────────────────────────
-        var sb = new StringBuilder();
+        StringBuilder sb = new();
         sb.AppendLine($"## 🔍 Code Review — Focus: {focus.ToUpper()} | Target: {dotnetVersion}");
         sb.AppendLine();
 
@@ -108,7 +107,7 @@ public sealed class CodeReviewSkill : ISkill
         {
             sb.AppendLine($"Found **{findings.Count}** finding(s):");
             sb.AppendLine();
-            foreach (var f in findings)
+            foreach (ReviewFinding f in findings)
             {
                 sb.AppendLine($"### {f.Severity}");
                 sb.AppendLine(f.Message);

@@ -1,6 +1,5 @@
-using SkillEngine.Core;
-using SkillEngine.Core.Abstractions;
 using System.Text;
+using SkillEngine.Core.Models;
 
 namespace SkillEngine.Tools.Skills;
 
@@ -102,15 +101,15 @@ public sealed class DiagnosticSkill : ISkill
 
     public Task<SkillResult> ExecuteAsync(SkillRequest request, CancellationToken cancellationToken = default)
     {
-        var error = request.GetParameter<string>("error");
+        string? error = request.GetParameter<string>("error");
         if (string.IsNullOrWhiteSpace(error))
             return Task.FromResult(SkillResult.Failure("Parameter 'error' is required.", "MISSING_PARAM"));
 
-        var context = request.GetParameter<string>("context");
-        var sb = new StringBuilder();
+        string? context = request.GetParameter<string>("context");
+        StringBuilder sb = new();
 
         // Try to match a known error
-        var entry = _knownErrors.FirstOrDefault(kv =>
+        DiagnosticEntry? entry = _knownErrors.FirstOrDefault(kv =>
             error.Contains(kv.Key, StringComparison.OrdinalIgnoreCase)).Value;
 
         if (entry is not null)
@@ -125,7 +124,7 @@ public sealed class DiagnosticSkill : ISkill
 
             sb.AppendLine();
             sb.AppendLine("### 🛠️ Remediation Steps");
-            foreach (var (step, idx) in entry.Steps.Select((s, i) => (s, i + 1)))
+            foreach ((string? step, int idx) in entry.Steps.Select((s, i) => (s, i + 1)))
                 sb.AppendLine($"{idx}. {step}");
         }
         else

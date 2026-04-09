@@ -1,6 +1,8 @@
-using SkillEngine.Core.Abstractions;
-using SkillEngine.Mcp.Protocol;
 using System.Text.Json;
+using SkillEngine.Core;
+using SkillEngine.Core.Abstractions;
+using SkillEngine.Core.Models;
+using SkillEngine.Mcp.Models;
 
 namespace SkillEngine.Mcp.Endpoints;
 
@@ -16,7 +18,7 @@ public static class McpEndpoints
         // ── GET /mcp/tools ────────────────────────────────────────────────────
         app.MapGet("/mcp/tools", (ISkillRouter router) =>
         {
-            var tools = router.GetAll().Select(skill =>
+            List<McpToolDefinition> tools = router.GetAll().Select(skill =>
             {
                 // Parse the skill's input schema JSON into an object for the manifest
                 object parsedSchema;
@@ -44,12 +46,12 @@ public static class McpEndpoints
         .WithTags("MCP");
 
         // ── POST /mcp/execute ─────────────────────────────────────────────────
-        app.MapPost("/mcp/execute", async (
+        app.MapPost("/mcp/execute", static async (
             McpExecuteRequest executeRequest,
             SkillEngine.Core.Engine.SkillOrchestrator orchestrator,
             CancellationToken cancellationToken) =>
         {
-            var skillRequest = new SkillRequest
+            SkillRequest skillRequest = new()
             {
                 ToolName = executeRequest.Tool,
                 Parameters = executeRequest.Parameters,
@@ -57,9 +59,9 @@ public static class McpEndpoints
                 AgentMetadata = executeRequest.Metadata
             };
 
-            var result = await orchestrator.InvokeAsync(skillRequest, cancellationToken);
+            SkillResult result = await orchestrator.InvokeAsync(skillRequest, cancellationToken);
 
-            var response = new McpExecuteResponse
+            McpExecuteResponse response = new()
             {
                 Success = result.IsSuccess,
                 Content = result.Content,

@@ -1,4 +1,5 @@
 using Scriban;
+using Scriban.Runtime;
 
 namespace SkillEngine.Core.Prompts;
 
@@ -17,7 +18,7 @@ public sealed class PromptRenderer
     /// <exception cref="InvalidOperationException">Thrown when Scriban parsing fails.</exception>
     public string Render(PromptTemplate template, Dictionary<string, object?> variables)
     {
-        var scribanTemplate = Template.Parse(template.Template);
+        Template scribanTemplate = Template.Parse(template.Template);
 
         if (scribanTemplate.HasErrors)
         {
@@ -25,8 +26,8 @@ public sealed class PromptRenderer
             throw new InvalidOperationException($"Template '{template.Name}' has parse errors: {errors}");
         }
 
-        var context = new TemplateContext();
-        var scriptObject = new Scriban.Runtime.ScriptObject();
+        TemplateContext context = new();
+        ScriptObject scriptObject = new();
 
         foreach (var (key, value) in variables)
             scriptObject.SetValue(key, value, readOnly: false);

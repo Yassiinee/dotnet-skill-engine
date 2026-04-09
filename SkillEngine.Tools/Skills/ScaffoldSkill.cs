@@ -1,8 +1,5 @@
-using SkillEngine.Core;
-using SkillEngine.Core.Abstractions;
-using SkillEngine.Core.Prompts;
 using System.Text;
-using System.Text.Json;
+using SkillEngine.Core.Models;
 
 namespace SkillEngine.Tools.Skills;
 
@@ -43,16 +40,19 @@ public sealed class ScaffoldSkill : ISkill
 
     private readonly PromptRenderer _renderer;
 
-    public ScaffoldSkill(PromptRenderer renderer) => _renderer = renderer;
+    public ScaffoldSkill(PromptRenderer renderer)
+    {
+        _renderer = renderer;
+    }
 
     public Task<SkillResult> ExecuteAsync(SkillRequest request, CancellationToken cancellationToken = default)
     {
-        var entity = request.GetParameter<string>("entity") ?? "Entity";
-        var pattern = request.GetParameter<string>("pattern") ?? "mvc";
-        var ns = request.GetParameter<string>("namespace") ?? "MyApp";
-        var includeTests = request.GetParameter<bool?>("include_tests") ?? false;
+        string entity = request.GetParameter<string>("entity") ?? "Entity";
+        string pattern = request.GetParameter<string>("pattern") ?? "mvc";
+        string ns = request.GetParameter<string>("namespace") ?? "MyApp";
+        bool includeTests = request.GetParameter<bool?>("include_tests") ?? false;
 
-        var sb = new StringBuilder();
+        StringBuilder sb = new();
         sb.AppendLine($"// 🏗️ Scaffold: {entity} — Pattern: {pattern.ToUpper()}");
         sb.AppendLine($"// Namespace: {ns}");
         sb.AppendLine();
@@ -78,7 +78,9 @@ public sealed class ScaffoldSkill : ISkill
         return Task.FromResult(SkillResult.Success(sb.ToString(), new { entity, pattern, ns }));
     }
 
-    private static string GenerateMvc(string entity, string ns, bool tests) => $$"""
+    private static string GenerateMvc(string entity, string ns, bool tests)
+    {
+        return $$"""
 // ── Model ─────────────────────────────────────────────────────────
 namespace {{ns}}.Models;
 
@@ -148,8 +150,11 @@ public class {{entity}}Controller : ControllerBase
 }
 {{(tests ? GenerateTestStub(entity, ns) : "")}}
 """;
+    }
 
-    private static string GenerateCqrs(string entity, string ns, bool tests) => $$"""
+    private static string GenerateCqrs(string entity, string ns, bool tests)
+    {
+        return $$"""
 // ── CQRS: {{entity}} ────────────────────────────────────────────────
 namespace {{ns}}.Features.{{entity}}s;
 
@@ -175,8 +180,11 @@ public sealed class Create{{entity}}CommandHandler
         => throw new NotImplementedException("TODO: inject your data source");
 }
 """;
+    }
 
-    private static string GenerateMinimalApi(string entity, string ns) => $$"""
+    private static string GenerateMinimalApi(string entity, string ns)
+    {
+        return $$"""
 // ── Minimal API: {{entity}} ─────────────────────────────────────────
 // Add this to your Program.cs / endpoint registration file
 namespace {{ns}}.Endpoints;
@@ -212,8 +220,11 @@ public static class {{entity}}Endpoints
     }
 }
 """;
+    }
 
-    private static string GenerateRepository(string entity, string ns) => $$"""
+    private static string GenerateRepository(string entity, string ns)
+    {
+        return $$"""
 // ── Repository Pattern: {{entity}} ─────────────────────────────────
 namespace {{ns}}.Repositories;
 
@@ -239,8 +250,11 @@ public class EfCore{{entity}}Repository : I{{entity}}Repository
     public Task RemoveAsync(Guid id, CancellationToken ct = default) => throw new NotImplementedException();
 }
 """;
+    }
 
-    private static string GenerateTestStub(string entity, string ns) => $$"""
+    private static string GenerateTestStub(string entity, string ns)
+    {
+        return $$"""
 
 // ── xUnit Test Stub ───────────────────────────────────────────────
 namespace {{ns}}.Tests;
@@ -260,5 +274,5 @@ public class {{entity}}ServiceTests
     }
 }
 """;
-
+    }
 }

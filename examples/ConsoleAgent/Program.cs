@@ -1,7 +1,9 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SkillEngine.Core;
+using SkillEngine.Core.Abstractions;
 using SkillEngine.Core.Engine;
+using SkillEngine.Core.Models;
 using SkillEngine.Tools.Skills;
 
 Console.OutputEncoding = System.Text.Encoding.UTF8;

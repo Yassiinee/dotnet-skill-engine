@@ -1,8 +1,4 @@
 using Microsoft.Extensions.DependencyInjection;
-using SkillEngine.Core.Abstractions;
-using SkillEngine.Core.Engine;
-using SkillEngine.Core.Prompts;
-using SkillEngine.Core.Rules;
 
 namespace SkillEngine.Core;
 
@@ -25,7 +21,7 @@ public static class SkillEngineServiceCollectionExtensions
     public static IServiceCollection AddSkillEngine(this IServiceCollection services,
         Action<SkillEngineOptions>? configure = null)
     {
-        var options = new SkillEngineOptions();
+        SkillEngineOptions options = new();
         configure?.Invoke(options);
 
         services.AddSingleton(options);

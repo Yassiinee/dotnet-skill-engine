@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
+using SkillEngine.Core.Models;
 
 namespace SkillEngine.Core.Engine;
 

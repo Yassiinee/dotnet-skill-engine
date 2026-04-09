@@ -1,3 +1,5 @@
+using SkillEngine.Core.Models;
+
 namespace SkillEngine.Core.Abstractions;
 
 /// <summary>

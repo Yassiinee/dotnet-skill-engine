@@ -1,4 +1,4 @@
-namespace SkillEngine.Core;
+namespace SkillEngine.Core.Models;
 
 /// <summary>
 /// Represents an incoming request to invoke a skill via MCP.
@@ -23,17 +23,15 @@ public sealed class SkillRequest
     /// <summary>Retrieves a typed parameter value by name.</summary>
     public T? GetParameter<T>(string name)
     {
-        if (Parameters.TryGetValue(name, out var value) && value is T typed)
-            return typed;
-        return default;
+        return Parameters.TryGetValue(name, out object? value) && value is T typed ? typed : default;
     }
 
     /// <summary>Retrieves a required parameter, throwing if missing.</summary>
     public T RequireParameter<T>(string name)
     {
         var result = GetParameter<T>(name);
-        if (result is null)
-            throw new InvalidOperationException($"Required parameter '{name}' is missing or has an invalid type.");
-        return result;
+        return result is null
+            ? throw new InvalidOperationException($"Required parameter '{name}' is missing or has an invalid type.")
+            : result;
     }
 }

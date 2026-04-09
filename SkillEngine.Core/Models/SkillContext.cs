@@ -1,4 +1,4 @@
-namespace SkillEngine.Core;
+namespace SkillEngine.Core.Models;
 
 /// <summary>
 /// Enriched context injected into a skill before execution.

@@ -1,8 +1,8 @@
 using Microsoft.Extensions.Logging.Abstractions;
-using SkillEngine.Core;
+using SkillEngine.Core.Abstractions;
 using SkillEngine.Core.Engine;
+using SkillEngine.Core.Models;
 using SkillEngine.Core.Rules;
-using SkillEngine.Tools.Skills;
 using Xunit;
 
 namespace SkillEngine.Core.Tests;
@@ -91,7 +91,9 @@ public class SkillOrchestratorTests
         public string InputSchema => "{}";
 
         public Task<SkillResult> ExecuteAsync(SkillRequest request, CancellationToken cancellationToken = default)
-            => Task.FromResult(SkillResult.Success(response));
+        {
+            return Task.FromResult(SkillResult.Success(response));
+        }
     }
 
     private sealed class SlowSkill : ISkill

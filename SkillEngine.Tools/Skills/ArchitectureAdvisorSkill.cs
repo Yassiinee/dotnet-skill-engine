@@ -1,4 +1,5 @@
 using System.Text;
+using SkillEngine.Core.Models;
 
 namespace SkillEngine.Tools.Skills;
 
@@ -138,9 +139,9 @@ public sealed class ArchitectureAdvisorSkill : ISkill
 
     public Task<SkillResult> ExecuteAsync(SkillRequest request, CancellationToken cancellationToken = default)
     {
-        var question = request.GetParameter<string>("question") ?? "";
-        var pattern = request.GetParameter<string>("pattern");
-        var teamSize = request.GetParameter<string>("team_size") ?? "medium";
+        string question = request.GetParameter<string>("question") ?? "";
+        string? pattern = request.GetParameter<string>("pattern");
+        string teamSize = request.GetParameter<string>("team_size") ?? "medium";
 
         StringBuilder sb = new();
         sb.AppendLine("## 🏛️ Architecture Advisory — .NET MCP Skill Engine");
@@ -165,7 +166,7 @@ public sealed class ArchitectureAdvisorSkill : ISkill
             sb.AppendLine("| Microservices | Scalable distributed systems | Very High | Large |");
             sb.AppendLine();
         }
-        else if (pattern is not null && _patterns.TryGetValue(pattern, out var entry))
+        else if (pattern is not null && _patterns.TryGetValue(pattern, out ArchitecturePattern? entry))
         {
             sb.AppendLine($"## {entry.Name}");
             sb.AppendLine();
@@ -173,11 +174,11 @@ public sealed class ArchitectureAdvisorSkill : ISkill
             sb.AppendLine();
 
             sb.AppendLine("### ✅ Pros");
-            foreach (var pro in entry.Pros) sb.AppendLine($"- {pro}");
+            foreach (string pro in entry.Pros) sb.AppendLine($"- {pro}");
             sb.AppendLine();
 
             sb.AppendLine("### ⚠️ Cons");
-            foreach (var con in entry.Cons) sb.AppendLine($"- {con}");
+            foreach (string con in entry.Cons) sb.AppendLine($"- {con}");
             sb.AppendLine();
 
             sb.AppendLine("### 📂 Recommended Structure");
@@ -189,7 +190,7 @@ public sealed class ArchitectureAdvisorSkill : ISkill
         {
             // Auto-recommend based on team size
             sb.AppendLine("### 💡 Recommendation");
-            var recommendation = teamSize switch
+            string recommendation = teamSize switch
             {
                 "solo" => "**Vertical Slice Architecture** — minimal boilerplate, feature-focused, easy to navigate alone.",
                 "small" => "**Clean Architecture** (simplified) — provides solid separation without overwhelming a small team.",

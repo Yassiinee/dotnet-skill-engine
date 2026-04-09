@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging.Abstractions;
-using SkillEngine.Core;
+using SkillEngine.Core.Abstractions;
 using SkillEngine.Core.Engine;
+using SkillEngine.Core.Models;
 using SkillEngine.Core.Prompts;
 using SkillEngine.Core.Rules;
 using SkillEngine.Tools.Skills;

@@ -1,3 +1,5 @@
+using SkillEngine.Core.Models;
+
 namespace SkillEngine.Core.Rules;
 
 /// <summary>
@@ -20,9 +22,9 @@ public sealed class RuleEngine
     /// </summary>
     public RuleResult Evaluate(SkillContext context)
     {
-        foreach (var rule in _rules)
+        foreach (ISkillRule rule in _rules)
         {
-            var result = rule.Evaluate(context);
+            RuleResult result = rule.Evaluate(context);
             if (!result.IsAllowed)
                 return result;
         }
@@ -49,14 +51,20 @@ public sealed class RuleResult
     public string? Reason { get; private init; }
     public string? ViolatedRule { get; private init; }
 
-    public static RuleResult Allow() => new() { IsAllowed = true };
-
-    public static RuleResult Deny(string reason, string ruleName) => new()
+    public static RuleResult Allow()
     {
-        IsAllowed = false,
-        Reason = reason,
-        ViolatedRule = ruleName
-    };
+        return new() { IsAllowed = true };
+    }
+
+    public static RuleResult Deny(string reason, string ruleName)
+    {
+        return new()
+        {
+            IsAllowed = false,
+            Reason = reason,
+            ViolatedRule = ruleName
+        };
+    }
 }
 
 // ── Built-in Rules ────────────────────────────────────────────────────────────
@@ -90,7 +98,10 @@ public sealed class MaxParameterCountRule : ISkillRule
     public int Priority => 20;
     public string Name => "MaxParameterCount";
 
-    public MaxParameterCountRule(int maxCount = 20) => _maxCount = maxCount;
+    public MaxParameterCountRule(int maxCount = 20)
+    {
+        _maxCount = maxCount;
+    }
 
     public RuleResult Evaluate(SkillContext context)
     {

@@ -1,4 +1,3 @@
-using SkillEngine.Core.Abstractions;
 using Microsoft.Extensions.Logging;
 
 namespace SkillEngine.Core.Engine;
@@ -28,15 +27,15 @@ public sealed class IntentRouter : ISkillRouter
     public ISkill? Route(string intent)
     {
         // 1. Exact match (case-insensitive)
-        if (_registry.TryGetValue(intent, out var skill))
+        if (_registry.TryGetValue(intent, out ISkill? skill))
         {
             _logger.LogDebug("[Router] Exact match: '{Intent}' → '{Skill}'", intent, skill.Name);
             return skill;
         }
 
         // 2. Partial / keyword match (for natural-language intents)
-        var normalized = intent.ToLowerInvariant();
-        var match = _registry.Values.FirstOrDefault(s =>
+        string normalized = intent.ToLowerInvariant();
+        ISkill? match = _registry.Values.FirstOrDefault(s =>
             normalized.Contains(s.Name.ToLowerInvariant()));
 
         if (match is not null)
@@ -50,5 +49,8 @@ public sealed class IntentRouter : ISkillRouter
     }
 
     /// <inheritdoc/>
-    public IReadOnlyList<ISkill> GetAll() => _registry.Values.ToList().AsReadOnly();
+    public IReadOnlyList<ISkill> GetAll()
+    {
+        return _registry.Values.ToList().AsReadOnly();
+    }
 }

@@ -1,4 +1,4 @@
-using SkillEngine.Core.Abstractions;
+using SkillEngine.Core.Models;
 
 namespace SkillEngine.Core.Engine;
 
@@ -14,7 +14,7 @@ public class DefaultContextBuilder : IContextBuilder
     public Task<SkillContext> BuildAsync(SkillRequest request, CancellationToken cancellationToken = default)
     {
         // Retrieve or create session state
-        if (!_sessions.TryGetValue(request.SessionId ?? "__default", out var sessionState))
+        if (!_sessions.TryGetValue(request.SessionId ?? "__default", out Dictionary<string, object?>? sessionState))
         {
             sessionState = new Dictionary<string, object?>();
             _sessions[request.SessionId ?? "__default"] = sessionState;
