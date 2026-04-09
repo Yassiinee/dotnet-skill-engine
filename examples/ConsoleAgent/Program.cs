@@ -48,7 +48,7 @@ while (true)
     if (input is "exit" or "quit") break;
     if (input is "help" or "?") { PrintHelp(router); continue; }
 
-    string[] parts = input.Split(' ', 2);
+    string[] parts = input.Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
     string toolName = parts[0].ToLowerInvariant();
     string argsRaw = parts.Length > 1 ? parts[1] : string.Empty;
 
@@ -123,10 +123,7 @@ static Dictionary<string, object?> ParseArgs(string raw)
     if (string.IsNullOrWhiteSpace(raw)) return result;
 
     // Support: key=value pairs, values with spaces must use quotes: key="some value"
-    System.Text.RegularExpressions.MatchCollection matches =
-        System.Text.RegularExpressions.Regex.Matches(raw, @"(\w[\w\-]*)=""([^""]*)""|(\w[\w\-]*)=(\S+)");
-
-    foreach (System.Text.RegularExpressions.Match m in matches)
+    foreach (System.Text.RegularExpressions.Match m in ArgsRegex().Matches(raw))
     {
         if (m.Groups[1].Success)
             result[m.Groups[1].Value] = m.Groups[2].Value;
@@ -135,4 +132,10 @@ static Dictionary<string, object?> ParseArgs(string raw)
     }
 
     return result;
+}
+
+internal partial class Program
+{
+    [System.Text.RegularExpressions.GeneratedRegex(@"(\w[\w\-]*)=""([^""]*)""|(\w[\w\-]*)=(\S+)")]
+    internal static partial System.Text.RegularExpressions.Regex ArgsRegex();
 }
