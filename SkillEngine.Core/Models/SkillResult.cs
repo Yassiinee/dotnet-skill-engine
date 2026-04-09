@@ -3,7 +3,7 @@ namespace SkillEngine.Core;
 /// <summary>
 /// Represents the output of a skill execution.
 /// </summary>
-public sealed class SkillResult
+public sealed record SkillResult
 {
     /// <summary>Whether the skill executed successfully.</summary>
     public bool IsSuccess { get; private init; }

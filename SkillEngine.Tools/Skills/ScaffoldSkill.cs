@@ -78,186 +78,187 @@ public sealed class ScaffoldSkill : ISkill
         return Task.FromResult(SkillResult.Success(sb.ToString(), new { entity, pattern, ns }));
     }
 
-    private static string GenerateMvc(string entity, string ns, bool tests) => $"""
+    private static string GenerateMvc(string entity, string ns, bool tests) => $$"""
 // ── Model ─────────────────────────────────────────────────────────
-namespace {ns}.Models;
+namespace {{ns}}.Models;
 
-public sealed class {entity}
-{{
-    public Guid Id {{ get; init; }} = Guid.NewGuid();
-    public required string Name {{ get; set; }}
-    public DateTimeOffset CreatedAt {{ get; init; }} = DateTimeOffset.UtcNow;
-}}
+public sealed class {{entity}}
+{
+    public Guid Id { get; init; } = Guid.NewGuid();
+    public required string Name { get; set; }
+    public DateTimeOffset CreatedAt { get; init; } = DateTimeOffset.UtcNow;
+}
 
 // ── Service ───────────────────────────────────────────────────────
-namespace {ns}.Services;
+namespace {{ns}}.Services;
 
-public interface I{entity}Service
-{{
-    Task<IEnumerable<{entity}>> GetAllAsync(CancellationToken ct = default);
-    Task<{entity}?> GetByIdAsync(Guid id, CancellationToken ct = default);
-    Task<{entity}> CreateAsync({entity} entity, CancellationToken ct = default);
+public interface I{{entity}}Service
+{
+    Task<IEnumerable<{{entity}}>> GetAllAsync(CancellationToken ct = default);
+    Task<{{entity}}?> GetByIdAsync(Guid id, CancellationToken ct = default);
+    Task<{{entity}}> CreateAsync({{entity}} entity, CancellationToken ct = default);
     Task DeleteAsync(Guid id, CancellationToken ct = default);
-}}
+}
 
-public class {entity}Service : I{entity}Service
-{{
-    // TODO: inject I{entity}Repository
-    public Task<IEnumerable<{entity}>> GetAllAsync(CancellationToken ct = default) => throw new NotImplementedException();
-    public Task<{entity}?> GetByIdAsync(Guid id, CancellationToken ct = default) => throw new NotImplementedException();
-    public Task<{entity}> CreateAsync({entity} entity, CancellationToken ct = default) => throw new NotImplementedException();
+public class {{entity}}Service : I{{entity}}Service
+{
+    // TODO: inject I{{entity}}Repository
+    public Task<IEnumerable<{{entity}}>> GetAllAsync(CancellationToken ct = default) => throw new NotImplementedException();
+    public Task<{{entity}}?> GetByIdAsync(Guid id, CancellationToken ct = default) => throw new NotImplementedException();
+    public Task<{{entity}}> CreateAsync({{entity}} entity, CancellationToken ct = default) => throw new NotImplementedException();
     public Task DeleteAsync(Guid id, CancellationToken ct = default) => throw new NotImplementedException();
-}}
+}
 
 // ── Controller ────────────────────────────────────────────────────
-namespace {ns}.Controllers;
+namespace {{ns}}.Controllers;
 
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
 [Route("api/[controller]")]
-public class {entity}Controller : ControllerBase
-{{
-    private readonly I{entity}Service _service;
-    public {entity}Controller(I{entity}Service service) => _service = service;
+public class {{entity}}Controller : ControllerBase
+{
+    private readonly I{{entity}}Service _service;
+    public {{entity}}Controller(I{{entity}}Service service) => _service = service;
 
     [HttpGet]
     public async Task<IActionResult> GetAll(CancellationToken ct)
         => Ok(await _service.GetAllAsync(ct));
 
-    [HttpGet("{{id}}")]
+    [HttpGet("{id}")]
     public async Task<IActionResult> GetById(Guid id, CancellationToken ct)
-    {{
+    {
         var item = await _service.GetByIdAsync(id, ct);
         return item is null ? NotFound() : Ok(item);
-    }}
+    }
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] {entity} entity, CancellationToken ct)
-    {{
+    public async Task<IActionResult> Create([FromBody] {{entity}} entity, CancellationToken ct)
+    {
         var created = await _service.CreateAsync(entity, ct);
-        return CreatedAtAction(nameof(GetById), new {{ id = created.Id }}, created);
-    }}
+        return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+    }
 
-    [HttpDelete("{{id}}")]
+    [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
-    {{
+    {
         await _service.DeleteAsync(id, ct);
         return NoContent();
-    }}
-}}
-{(tests ? GenerateTestStub(entity, ns) : "")}
+    }
+}
+{{(tests ? GenerateTestStub(entity, ns) : "")}}
 """;
 
-    private static string GenerateCqrs(string entity, string ns, bool tests) => $"""
-// ── CQRS: {entity} ────────────────────────────────────────────────
-namespace {ns}.Features.{entity}s;
+    private static string GenerateCqrs(string entity, string ns, bool tests) => $$"""
+// ── CQRS: {{entity}} ────────────────────────────────────────────────
+namespace {{ns}}.Features.{{entity}}s;
 
 // Query
-public sealed record Get{entity}Query(Guid Id);
-public sealed record Get{entity}Response(Guid Id, string Name, DateTimeOffset CreatedAt);
+public sealed record Get{{entity}}Query(Guid Id);
+public sealed record Get{{entity}}Response(Guid Id, string Name, DateTimeOffset CreatedAt);
 
 // Command
-public sealed record Create{entity}Command(string Name);
-public sealed record Create{entity}Response(Guid Id);
+public sealed record Create{{entity}}Command(string Name);
+public sealed record Create{{entity}}Response(Guid Id);
 
 // Handler (Query)
-public sealed class Get{entity}QueryHandler
-{{
-    public Task<Get{entity}Response?> HandleAsync(Get{entity}Query query, CancellationToken ct)
+public sealed class Get{{entity}}QueryHandler
+{
+    public Task<Get{{entity}}Response?> HandleAsync(Get{{entity}}Query query, CancellationToken ct)
         => throw new NotImplementedException("TODO: inject your data source");
-}}
+}
 
 // Handler (Command)
-public sealed class Create{entity}CommandHandler
-{{
-    public Task<Create{entity}Response> HandleAsync(Create{entity}Command command, CancellationToken ct)
+public sealed class Create{{entity}}CommandHandler
+{
+    public Task<Create{{entity}}Response> HandleAsync(Create{{entity}}Command command, CancellationToken ct)
         => throw new NotImplementedException("TODO: inject your data source");
-}}
+}
 """;
 
-    private static string GenerateMinimalApi(string entity, string ns) => $"""
-// ── Minimal API: {entity} ─────────────────────────────────────────
+    private static string GenerateMinimalApi(string entity, string ns) => $$"""
+// ── Minimal API: {{entity}} ─────────────────────────────────────────
 // Add this to your Program.cs / endpoint registration file
-namespace {ns}.Endpoints;
+namespace {{ns}}.Endpoints;
 
-public static class {entity}Endpoints
-{{
-    public static IEndpointRouteBuilder Map{entity}Endpoints(this IEndpointRouteBuilder app)
-    {{
-        var group = app.MapGroup("/api/{entity.ToLower()}s").WithTags("{entity}s");
+public static class {{entity}}Endpoints
+{
+    public static IEndpointRouteBuilder Map{{entity}}Endpoints(this IEndpointRouteBuilder app)
+    {
+        var group = app.MapGroup("/api/{{entity.ToLower()}}s").WithTags("{{entity}}s");
 
-        group.MapGet("/", async (I{entity}Service svc, CancellationToken ct)
+        group.MapGet("/", async (I{{entity}}Service svc, CancellationToken ct)
             => Results.Ok(await svc.GetAllAsync(ct)));
 
-        group.MapGet("/{{id:guid}}", async (Guid id, I{entity}Service svc, CancellationToken ct) =>
-        {{
+        group.MapGet("/{id:guid}", async (Guid id, I{{entity}}Service svc, CancellationToken ct) =>
+        {
             var item = await svc.GetByIdAsync(id, ct);
             return item is null ? Results.NotFound() : Results.Ok(item);
-        }});
+        });
 
-        group.MapPost("/", async ({entity} body, I{entity}Service svc, CancellationToken ct) =>
-        {{
+        group.MapPost("/", async ({{entity}} body, I{{entity}}Service svc, CancellationToken ct) =>
+        {
             var created = await svc.CreateAsync(body, ct);
-            return Results.Created($"/api/{entity.ToLower()}s/{{created.Id}}", created);
-        }});
+            return Results.Created($"/api/{{entity.ToLower()}}s/{created.Id}", created);
+        });
 
-        group.MapDelete("/{{id:guid}}", async (Guid id, I{entity}Service svc, CancellationToken ct) =>
-        {{
+        group.MapDelete("/{id:guid}", async (Guid id, I{{entity}}Service svc, CancellationToken ct) =>
+        {
             await svc.DeleteAsync(id, ct);
             return Results.NoContent();
-        }});
+        });
 
         return app;
-    }}
-}}
+    }
+}
 """;
 
-    private static string GenerateRepository(string entity, string ns) => $"""
-// ── Repository Pattern: {entity} ─────────────────────────────────
-namespace {ns}.Repositories;
+    private static string GenerateRepository(string entity, string ns) => $$"""
+// ── Repository Pattern: {{entity}} ─────────────────────────────────
+namespace {{ns}}.Repositories;
 
-public interface I{entity}Repository
-{{
-    Task<IEnumerable<{entity}>> GetAllAsync(CancellationToken ct = default);
-    Task<{entity}?> FindAsync(Guid id, CancellationToken ct = default);
-    Task AddAsync({entity} entity, CancellationToken ct = default);
-    Task UpdateAsync({entity} entity, CancellationToken ct = default);
+public interface I{{entity}}Repository
+{
+    Task<IEnumerable<{{entity}}>> GetAllAsync(CancellationToken ct = default);
+    Task<{{entity}}?> FindAsync(Guid id, CancellationToken ct = default);
+    Task AddAsync({{entity}} entity, CancellationToken ct = default);
+    Task UpdateAsync({{entity}} entity, CancellationToken ct = default);
     Task RemoveAsync(Guid id, CancellationToken ct = default);
-}}
+}
 
 // EF Core implementation stub
-public class EfCore{entity}Repository : I{entity}Repository
-{{
+public class EfCore{{entity}}Repository : I{{entity}}Repository
+{
     // private readonly AppDbContext _context;
-    // public EfCore{entity}Repository(AppDbContext context) => _context = context;
+    // public EfCore{{entity}}Repository(AppDbContext context) => _context = context;
 
-    public Task<IEnumerable<{entity}>> GetAllAsync(CancellationToken ct = default) => throw new NotImplementedException();
-    public Task<{entity}?> FindAsync(Guid id, CancellationToken ct = default) => throw new NotImplementedException();
-    public Task AddAsync({entity} entity, CancellationToken ct = default) => throw new NotImplementedException();
-    public Task UpdateAsync({entity} entity, CancellationToken ct = default) => throw new NotImplementedException();
+    public Task<IEnumerable<{{entity}}>> GetAllAsync(CancellationToken ct = default) => throw new NotImplementedException();
+    public Task<{{entity}}?> FindAsync(Guid id, CancellationToken ct = default) => throw new NotImplementedException();
+    public Task AddAsync({{entity}} entity, CancellationToken ct = default) => throw new NotImplementedException();
+    public Task UpdateAsync({{entity}} entity, CancellationToken ct = default) => throw new NotImplementedException();
     public Task RemoveAsync(Guid id, CancellationToken ct = default) => throw new NotImplementedException();
-}}
+}
 """;
 
-    private static string GenerateTestStub(string entity, string ns) => $"""
+    private static string GenerateTestStub(string entity, string ns) => $$"""
 
 // ── xUnit Test Stub ───────────────────────────────────────────────
-namespace {ns}.Tests;
+namespace {{ns}}.Tests;
 
-public class {entity}ServiceTests
-{{
+public class {{entity}}ServiceTests
+{
     [Fact]
     public async Task GetAllAsync_ReturnsItems()
-    {{
+    {
         // Arrange
-        // var svc = new {entity}Service( ... );
+        // var svc = new {{entity}}Service( ... );
         // Act
         // var result = await svc.GetAllAsync();
         // Assert
         // Assert.NotNull(result);
         throw new NotImplementedException("Write your test here");
-    }}
-}}
+    }
+}
 """;
+
 }
