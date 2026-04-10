@@ -4,6 +4,7 @@ using SkillEngine.Core.Engine;
 using SkillEngine.Core.Models;
 using SkillEngine.Core.Prompts;
 using SkillEngine.Core.Rules;
+using SkillEngine.Core.Engine.Middlewares;
 using SkillEngine.Tools.Skills;
 using Xunit;
 
@@ -29,9 +30,18 @@ public class SkillIntegrationTests
         ];
 
         ISkillRouter router = new IntentRouter(skills, NullLogger<IntentRouter>.Instance);
-        IContextBuilder ctx = new DefaultContextBuilder();
-        RuleEngine rules = new([new MaxParameterCountRule(20)]);
-        _orchestrator = new SkillOrchestrator(router, ctx, rules, NullLogger<SkillOrchestrator>.Instance);
+        IContextBuilder ctxBuilder = new DefaultContextBuilder();
+        RuleEngine ruleEngine = new([new MaxParameterCountRule(20)]);
+
+        var validationMiddleware = new ValidationMiddleware(
+            ruleEngine,
+            ctxBuilder,
+            NullLogger<ValidationMiddleware>.Instance);
+
+        _orchestrator = new SkillOrchestrator(
+            router,
+            new[] { validationMiddleware },
+            NullLogger<SkillOrchestrator>.Instance);
     }
 
     [Theory]

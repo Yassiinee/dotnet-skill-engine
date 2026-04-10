@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using SkillEngine.Core.Engine.Middlewares;
 
 namespace SkillEngine.Core;
 
@@ -45,6 +46,19 @@ public static class SkillEngineServiceCollectionExtensions
         if (options.DeniedTools.Count > 0)
             services.AddSingleton<ISkillRule>(new DenyListRule(options.DeniedTools));
 
+        // Register default middleware (Validation)
+        services.AddSkillMiddleware<ValidationMiddleware>();
+
+        return services;
+    }
+
+    /// <summary>
+    /// Registers a middleware implementation.
+    /// </summary>
+    public static IServiceCollection AddSkillMiddleware<TMiddleware>(this IServiceCollection services)
+        where TMiddleware : class, ISkillMiddleware
+    {
+        services.AddSingleton<ISkillMiddleware, TMiddleware>();
         return services;
     }
 

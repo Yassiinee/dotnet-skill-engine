@@ -3,6 +3,7 @@ using SkillEngine.Core.Abstractions;
 using SkillEngine.Core.Engine;
 using SkillEngine.Core.Models;
 using SkillEngine.Core.Rules;
+using SkillEngine.Core.Engine.Middlewares;
 using Xunit;
 
 namespace SkillEngine.Core.Tests;
@@ -11,10 +12,24 @@ public class SkillOrchestratorTests
 {
     private static SkillOrchestrator BuildOrchestrator(params ISkill[] skills)
     {
+        return BuildOrchestratorWithRules(skills, Array.Empty<ISkillRule>());
+    }
+
+    private static SkillOrchestrator BuildOrchestratorWithRules(ISkill[] skills, ISkillRule[] rules)
+    {
         ISkillRouter router = new IntentRouter(skills, NullLogger<IntentRouter>.Instance);
         IContextBuilder contextBuilder = new DefaultContextBuilder();
-        RuleEngine ruleEngine = new(Array.Empty<ISkillRule>());
-        return new SkillOrchestrator(router, contextBuilder, ruleEngine, NullLogger<SkillOrchestrator>.Instance);
+        RuleEngine ruleEngine = new(rules);
+        
+        var validationMiddleware = new ValidationMiddleware(
+            ruleEngine, 
+            contextBuilder, 
+            NullLogger<ValidationMiddleware>.Instance);
+
+        return new SkillOrchestrator(
+            router, 
+            new[] { validationMiddleware }, 
+            NullLogger<SkillOrchestrator>.Instance);
     }
 
     [Fact]
@@ -51,10 +66,9 @@ public class SkillOrchestratorTests
     public async Task InvokeAsync_DenyListRule_BlocksRequest()
     {
         // Arrange
-        ISkillRouter router = new IntentRouter([new FakeSkill("blocked-tool", "data")], NullLogger<IntentRouter>.Instance);
-        IContextBuilder ctx = new DefaultContextBuilder();
-        RuleEngine rules = new([new DenyListRule(["blocked-tool"])]);
-        SkillOrchestrator orchestrator = new(router, ctx, rules, NullLogger<SkillOrchestrator>.Instance);
+        SkillOrchestrator orchestrator = BuildOrchestratorWithRules(
+            [new FakeSkill("blocked-tool", "data")], 
+            [new DenyListRule(["blocked-tool"])]);
 
         SkillRequest request = new() { ToolName = "blocked-tool" };
 
