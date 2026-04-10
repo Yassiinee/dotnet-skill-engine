@@ -66,6 +66,46 @@ public ValueTask<Product?> GetFromCacheAsync(Guid id)
 }
 ```
 
+> [!WARNING]
+> **Never double-await a `ValueTask`.** Unlike `Task`, a `ValueTask` may be backed by a pooled object. Awaiting it twice or calling `.Result` after awaiting can lead to race conditions or crashes. If you need to await multiple times, call `.AsTask()`.
+
+## Producer/Consumer with Channels
+For high-performance background processing, use `System.Threading.Channels` instead of `BlockingCollection`.
+
+```csharp
+var channel = Channel.CreateBounded<string>(100);
+
+// Producer
+await channel.Writer.WriteAsync("Job Data");
+
+// Consumer
+await foreach (var item in channel.Reader.ReadAllAsync())
+{
+    Process(item);
+}
+```
+
+## Async Resource Management
+Use `IAsyncDisposable` for types that need to perform async cleanup (e.g., closing a network stream).
+
+```csharp
+public async Task ProcessData()
+{
+    await using var client = new MyAsyncClient();
+    await client.DoWorkAsync();
+} // client.DisposeAsync() called here
+```
+
+## Async Lazy Initialization
+Avoid locks by using `Lazy<Task<T>>` or a specialized `AsyncLazy` pattern.
+
+```csharp
+private readonly Lazy<Task<Config>> _config = new(async () => 
+    await LoadConfigFromApiAsync());
+
+public Task<Config> GetConfigAsync() => _config.Value;
+```
+
 ## Parallel Execution
 
 ```csharp
@@ -91,5 +131,7 @@ await Task.WhenAll(items.Select(async item =>
 | -------------------------------------- | ---------------------------------------- |
 | `async void`                           | Use `async Task` (except event handlers) |
 | Fire-and-forget without error handling | Use `_ = Task.Run(...)` with try/catch   |
-| `Task.Run` around async code           | Remove `Task.Run` — await directly       |
-| Unobserved task exceptions             | Always await or handle                   |
+| Ignoring `CancellationToken`           | Pass `ct` to all async child methods     |
+| Long-running `Task.Run`                | Use `TaskCreationOptions.LongRunning`    |
+| Blocking with `.Result`                | `await` all the way up                   |
+| Double-awaiting `ValueTask`            | Call `.AsTask()` if multiple awaits needed|

@@ -85,30 +85,70 @@ builder.Services.AddCors(o => o.AddPolicy("prod", p =>
      .AllowCredentials()));
 ```
 
-### 6. Security Headers
+### 6. Security Headers & CSP
+Modern browsers respect headers that mitigate XSS and clickjacking.
 
 ```csharp
-// Add via middleware or NWebSec
+// Standard hardening
+app.UseHsts();
+app.UseHttpsRedirection();
+
+// Advanced CSP (Content Security Policy)
 app.Use(async (ctx, next) =>
 {
-    ctx.Response.Headers["X-Content-Type-Options"] = "nosniff";
-    ctx.Response.Headers["X-Frame-Options"] = "DENY";
-    ctx.Response.Headers["Referrer-Policy"] = "no-referrer";
-    ctx.Response.Headers["Permissions-Policy"] = "geolocation=()";
+    ctx.Response.Headers.Append("Content-Security-Policy", 
+        "default-src 'self'; " +
+        "script-src 'self' https://trusted.cdn.com; " +
+        "style-src 'self' 'unsafe-inline'; " +
+        "img-src 'self' data:;");
+    ctx.Response.Headers.Append("X-Content-Type-Options", "nosniff");
+    ctx.Response.Headers.Append("X-Frame-Options", "DENY");
     await next();
 });
+```
+
+### 7. Data Protection API (Encryption at Rest)
+Use `IDataProtectionProvider` for sensitive data that doesn't belong in a DB (e.g., temporary tokens, cookies).
+
+```csharp
+public class SecretService(IDataProtectionProvider provider)
+{
+    private readonly IDataProtector _protector = provider.CreateProtector("SecretService.v1");
+
+    public string Encrypt(string input) => _protector.Protect(input);
+    public string Decrypt(string cipherText) => _protector.Unprotect(cipherText);
+}
+```
+
+### 8. Policy-Based Authorization
+Move logic out of controllers into reusable requirements.
+
+```csharp
+// Definition
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AtLeast21", policy =>
+        policy.Requirements.Add(new MinimumAgeRequirement(21)));
+});
+
+// Usage
+[Authorize(Policy = "AtLeast21")]
+public IActionResult DrinkBeer() => Ok();
 ```
 
 ## Security Checklist
 
 - [ ] Enable HTTPS (`UseHttpsRedirection`)
+- [ ] Enable HSTS in production (`UseHsts`)
+- [ ] Set `HttpOnly` and `Secure` flags on all cookies
+- [ ] Use `SameSite=Strict` or `Lax` to mitigate CSRF
 - [ ] Validate all inputs (FluentValidation)
 - [ ] Use parameterized queries / EF Core
-- [ ] Store secrets in Key Vault, not appsettings.json
-- [ ] Enforce JWT validation with signing key
-- [ ] Rate limit sensitive endpoints (`AddRateLimiter`)
-- [ ] Log security events (failed logins, IDOR attempts)
-- [ ] Enable HSTS in production
+- [ ] Store secrets in Key Vault / User Secrets
+- [ ] Implement Rate Limiting (`AddRateLimiter`)
+- [ ] Audit logs for sensitive operations
+- [ ] Scrutinize `unsafe-inline` in CSP
+- [ ] Use Data Protection API for local encryption
 
 ## References
 
